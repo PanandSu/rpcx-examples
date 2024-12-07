@@ -34,14 +34,16 @@ func main() {
 	ctx := context.WithValue(context.Background(), share.ReqMetaDataKey, map[string]string{"aaa": "from client"})
 	ctx = context.WithValue(ctx, share.ResMetaDataKey, make(map[string]string))
 	wg := sync.WaitGroup{}
-
+	mu := sync.Mutex{}
 	for i := 0; i < 100; i++ {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
 
 			args.A = i
+			mu.Lock()
 			err := xclient.Call(ctx, "Mul", args, reply)
+			mu.Unlock()
 			if err != nil {
 				log.Fatalf("failed to call: %v", err)
 			}
